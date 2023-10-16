@@ -1,9 +1,9 @@
 import express from 'express'
 
-import ChromeBrowserController from './controllers/ChromeBrowserController'
+import BrowserController from './controllers/BrowserController'
 
 const routes = express.Router()
 
-routes.get('/chrome/store', ChromeBrowserController.store)
+routes.get('/chrome/store', BrowserController.store)
 
 export default routes
