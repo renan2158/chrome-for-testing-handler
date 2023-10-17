@@ -20,7 +20,7 @@ interface BrowserChannelInfo {
 }
 
 async function GetChromeLatestVersion(channel: BrowserChannel): Promise<string> {
-    console.log('Getting Chrome for Testing latest version for channel ' + channel)
+    console.log('Getting Chrome for Testing latest version from channel ' + channel)
 
     const response = await axios.get('https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json')
     const responseData = response.data as LatestChromeVersions

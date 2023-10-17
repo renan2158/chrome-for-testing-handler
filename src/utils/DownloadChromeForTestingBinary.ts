@@ -1,6 +1,6 @@
 import path from 'path'
 import axios from 'axios'
-import { platform } from 'node:process'
+import { File } from 'decompress'
 
 import { BrowserChannel } from '../enums/BrowserChannel'
 import CreateFolderIfNecessary from './CreateFolderIfNecessary'
@@ -8,6 +8,8 @@ import MoveFile from './MoveFile'
 import RemoveDirectory from './RemoveDirectory'
 import DownloadFile from './DownloadFile'
 import UnpackFile from './UnpackFile'
+import { GetCurrentPlatformInfo } from './OSPlatformHelper'
+import { DoesStringIncludesAllOfTheFollowing } from './StringHelper'
 
 interface LatestChromeVersions {
     timestamp: string,
@@ -39,7 +41,7 @@ interface BrowserChannelDownloadOption {
 }
 
 async function DownloadChromeForTestingBinary(targetDirectory: string, channel: BrowserChannel): Promise<void> {
-    console.log('Downloading Chrome for Testing binary for channel ' + channel)
+    console.log('Downloading Chrome for Testing binary from channel ' + channel)
 
     const response = await axios.get('https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json')
 
@@ -47,9 +49,10 @@ async function DownloadChromeForTestingBinary(targetDirectory: string, channel: 
     const latestChromeVersionChannels: LatestChromeVersionChannels = latestChromeVersions.channels as LatestChromeVersionChannels
     const { downloads } = latestChromeVersionChannels[channel]
     const latestChromeDownloadLinks: BrowserChannelDownloadOption[] = downloads.chrome
+    const currentPlatformInfo: string[] = GetCurrentPlatformInfo()
 
-    const desiredChromePlatformVersion: BrowserChannelDownloadOption | undefined = latestChromeDownloadLinks
-        .filter((chromePlatform: any) => chromePlatform.platform == 'mac-x64').at(0)
+    const [desiredChromePlatformVersion] = latestChromeDownloadLinks
+        .filter(chromePlatform => DoesStringIncludesAllOfTheFollowing(chromePlatform.platform, currentPlatformInfo))
 
     if (desiredChromePlatformVersion === undefined)
         throw Error("No binary found to the current OS platform")
@@ -57,11 +60,13 @@ async function DownloadChromeForTestingBinary(targetDirectory: string, channel: 
     const latestBrowserTemporaryFolder: string = path.resolve(targetDirectory, 'tmp')
     CreateFolderIfNecessary(latestBrowserTemporaryFolder)
 
-    const targetFilePath: string = path.resolve(latestBrowserTemporaryFolder, 'chrome-mac-x64.zip')
+    const targetFilePath: string = path.resolve(latestBrowserTemporaryFolder, 'chrome-binary.zip')
     await DownloadFile(desiredChromePlatformVersion.url, targetFilePath)
-    await UnpackFile(targetFilePath, latestBrowserTemporaryFolder)
 
-    MoveFile(path.resolve(latestBrowserTemporaryFolder, 'chrome-mac-x64', 'Google Chrome for Testing.app'),
+    const extractedFiles: File[] = await UnpackFile(targetFilePath, latestBrowserTemporaryFolder)
+    const [chromeBinaryFile] = extractedFiles.filter(file => file.path.includes('Google Chrome for Testing.app'))
+
+    MoveFile(path.resolve(latestBrowserTemporaryFolder, chromeBinaryFile.path),
         path.resolve(targetDirectory, 'Google Chrome for Testing.app'))
 
     RemoveDirectory(latestBrowserTemporaryFolder)
