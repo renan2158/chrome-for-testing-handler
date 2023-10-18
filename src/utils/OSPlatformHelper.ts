@@ -1,12 +1,12 @@
 import { platform as systemPlatform, arch as systemArchitecture } from 'node:process'
 
-enum PlatformNames {
+enum PlatformName {
     LINUX = 'linux',
     DARWIN = 'mac',
     WIN32 = 'win'
 }
 
-enum ArchitectureNames {
+enum ArchitectureName {
     X32 = 'x32',
     X64 = 'x64',
     ARM64 = 'arm64'
@@ -20,31 +20,27 @@ export function GetCurrentPlatformInfo(): [string, string] {
 }
 
 function GetCurrentPlatformName(): string {
-    const platformName = GetEnumPropertyFromValue(PlatformNames, systemPlatform)
+    const uppercasedPlatformName = systemPlatform.toUpperCase()
 
-    if (!platformName)
+    if (!isPlatformNameValid(uppercasedPlatformName))
         throw Error('Error while getting the platform name')
 
-    return platformName
+    return PlatformName[uppercasedPlatformName]
 }
 
 function GetCurrentArchitectureName(): string {
-    const architectureName = GetEnumPropertyFromValue(ArchitectureNames, systemArchitecture)
+    const uppercasedArchitectureName = systemArchitecture.toUpperCase()
 
-    if (!architectureName)
+    if (!isArchitectureNameValid(uppercasedArchitectureName))
         throw Error('Error while getting the architecture name')
 
-    return architectureName
+    return ArchitectureName[uppercasedArchitectureName]
 }
 
-function GetEnumPropertyFromValue(sourceEnum: object, value: string) {
-    let enumKeys = Object.keys(sourceEnum)
-    let enumValues = Object.values(sourceEnum)
+function isPlatformNameValid(value: string): value is keyof typeof PlatformName {
+    return value in PlatformName
+}
 
-    for (let i = 0; i < enumKeys.length; i++) {
-        if (enumKeys[i].toUpperCase() === value.toUpperCase())
-            return enumValues[i]
-    }
-
-    return null
+function isArchitectureNameValid(value: string): value is keyof typeof ArchitectureName {
+    return value in ArchitectureName
 }

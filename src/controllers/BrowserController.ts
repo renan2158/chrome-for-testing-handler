@@ -6,21 +6,21 @@ import GetChromeLatestVersion from '../utils/GetChromeLatestVersion'
 import GetChromeForTestingFolderPath from '../utils/GetChromeForTestingFolderPath'
 import CreateFolderIfNecessary from '../utils/CreateFolderIfNecessary'
 import DownloadChromeForTestingBinary from '../utils/DownloadChromeForTestingBinary'
-import { BrowserChannel } from '../enums/BrowserChannel'
+import { BrowserChannel, GetBrowserChannelFromValue } from '../enums/BrowserChannel'
 import DownloadChromeForTestingDriver from '../utils/DownloadChromeForTestingDriver'
 
 interface BrowserStoreRequest {
-    browserChannel?: BrowserChannel
+    channel?: string
 }
 
 class ChromeBrowserController {
     async store(req: Request, res: Response) {
-        let { browserChannel } = req.body as BrowserStoreRequest
-        browserChannel = browserChannel ?? BrowserChannel.STABLE
+        let { channel } = req.body as BrowserStoreRequest
+        let selectedChannel: BrowserChannel = channel !== undefined ? GetBrowserChannelFromValue(channel) : BrowserChannel.STABLE
 
         const chromeForTestingFolder: string = GetChromeForTestingFolderPath()
         const chromeBrowserFolder: string =  path.resolve(chromeForTestingFolder)
-        const latestBrowserVersion: string = await GetChromeLatestVersion(browserChannel)
+        const latestBrowserVersion: string = await GetChromeLatestVersion(selectedChannel)
 
         const latestChromeVersionFolderPath = path.resolve(chromeBrowserFolder, latestBrowserVersion)
 
@@ -29,8 +29,8 @@ class ChromeBrowserController {
         }
 
         CreateFolderIfNecessary(latestChromeVersionFolderPath)
-        await DownloadChromeForTestingBinary(latestChromeVersionFolderPath, browserChannel)
-        await DownloadChromeForTestingDriver(latestChromeVersionFolderPath, browserChannel)
+        await DownloadChromeForTestingBinary(latestChromeVersionFolderPath, selectedChannel)
+        await DownloadChromeForTestingDriver(latestChromeVersionFolderPath, selectedChannel)
 
         return res.status(200).send(`Google Chrome for Testing ${latestBrowserVersion} was successfully installed!`)
     }
