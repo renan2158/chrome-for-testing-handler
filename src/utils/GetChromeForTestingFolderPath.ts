@@ -1,7 +1,7 @@
 import os from 'node:os'
 import path from 'path'
 
-import CreateFolderIfNecessary from './CreateFolderIfNecessary'
+import { CreateFolderIfNecessary } from './FolderHelper'
 
 function GetChromeForTestingFolderPath(): string {
     const systemUserHomeFolder: string = os.homedir()

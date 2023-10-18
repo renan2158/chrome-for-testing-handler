@@ -3,7 +3,7 @@ import axios from 'axios'
 import { File } from 'decompress'
 
 import { BrowserChannel } from '../enums/BrowserChannel'
-import CreateFolderIfNecessary from './CreateFolderIfNecessary'
+import { CreateFolderIfNecessary } from './FolderHelper'
 import MoveFile from './MoveFile'
 import RemoveDirectory from './RemoveDirectory'
 import DownloadFile from './DownloadFile'

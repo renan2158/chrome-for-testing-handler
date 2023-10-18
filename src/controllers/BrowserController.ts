@@ -4,7 +4,7 @@ import { Request, Response } from 'express'
 
 import GetChromeLatestVersion from '../utils/GetChromeLatestVersion'
 import GetChromeForTestingFolderPath from '../utils/GetChromeForTestingFolderPath'
-import CreateFolderIfNecessary from '../utils/CreateFolderIfNecessary'
+import { CreateFolderIfNecessary, IsFolderEmpty } from '../utils/FolderHelper'
 import DownloadChromeForTestingBinary from '../utils/DownloadChromeForTestingBinary'
 import { BrowserChannel, GetBrowserChannelFromValue } from '../enums/BrowserChannel'
 import DownloadChromeForTestingDriver from '../utils/DownloadChromeForTestingDriver'
@@ -24,7 +24,7 @@ class ChromeBrowserController {
 
         const latestChromeVersionFolderPath = path.resolve(chromeBrowserFolder, latestBrowserVersion)
 
-        if (existsSync(latestChromeVersionFolderPath)) {
+        if (existsSync(latestChromeVersionFolderPath) && !IsFolderEmpty(latestChromeVersionFolderPath)) {
             return res.status(200).send(`The Google Chrome for Testing ${latestBrowserVersion} is already installed!`)
         }
 
